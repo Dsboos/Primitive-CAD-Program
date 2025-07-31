@@ -25,6 +25,8 @@ To see the point rendered, use the renderToFile() method of Screen and pass the 
     viewport.plotPoint(&pt1); //Plots point onto viewport cartesian plane
     screen.renderToFile(viewport.getViewportData()); //Passes image data to Screen to be rendered into a .txt file
 ```
+![plotPoint](https://github.com/Dsboos/Primitive-CAD-Program/blob/main/PointPlot.png?raw=true)
+
 The point has a Translate() method that takes in parameters (int x_distance, int y_distance) corresponsing to the desired translation.
 
 ```cpp
@@ -42,6 +44,7 @@ Use plotObject() method to plot line by passing the value of Line.getLinePoints(
     viewport.plotObject(line1.getLinePoints()); //Plots all points belonging to line onto viewport
     screen.renderToFile(viewport.getViewportData()); //render
 ```
+![plotLine](https://github.com/Dsboos/Primitive-CAD-Program/blob/main/LinePlot.png?raw=true)
 
 ## Creating Circles
 The Circles class takes in two parameters: center and radius. One option is to pass the center as a Point Object along with an int value of radius.
@@ -52,6 +55,34 @@ Alternately, two int values may be passed as x_center and y_center respectively 
     viewport.plotObject(circle.getLinePoints());  //plot circle points onto viewport
     screen.renderToFile(viewport.getViewportData()); // render
 ```
+![circle](https://github.com/Dsboos/Primitive-CAD-Program/blob/main/CirclePlot.png?raw=true)
+
+## Example Drawing (Face)
+RESOLUTION_X = 481px, 
+RESOLUTION_Y = 280px
+```cpp
+   Screen screen(RESOLUTION_X, RESOLUTION_Y);
+    Viewport viewport(RESOLUTION_X, RESOLUTION_Y);
+
+    Circle head(RESOLUTION_X / 2, RESOLUTION_Y / 2, 100);
+    viewport.plotObject(head.getLinePoints());
+
+    Circle eyeR(RESOLUTION_X / 2 + 20, RESOLUTION_Y / 2 + 20, 20);
+    viewport.plotObject(eyeR.getLinePoints());
+    Circle eyeL(RESOLUTION_X / 2 - 20, RESOLUTION_Y / 2 + 20, 20);
+    viewport.plotObject(eyeL.getLinePoints());
+
+    Circle pupilR(RESOLUTION_X / 2 + 10, RESOLUTION_Y / 2 + 20, 10);
+    viewport.plotObject(pupilR.getLinePoints());
+    Circle pupilL(RESOLUTION_X / 2 - 10, RESOLUTION_Y / 2 + 20, 10);
+    viewport.plotObject(pupilL.getLinePoints());
+
+    Line mouth(RESOLUTION_X / 2 + 20, RESOLUTION_Y / 2 - 35, RESOLUTION_X / 2 - 20, RESOLUTION_Y / 2 - 45);
+    viewport.plotObject(mouth.getLinePoints());
+
+    screen.renderToFile(viewport.getViewportData());
+```
+![faceRender](https://github.com/Dsboos/Primitive-CAD-Program/blob/main/FaceRender.png?raw=true)
 
 ## Debugging Tools
 ### 1)(Viewport Method) generateCheckedBG(): 
