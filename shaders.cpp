@@ -12,8 +12,8 @@ using namespace std;
 const int RESOLUTION_X = 481;
 const int RESOLUTION_Y = 280;
 const int RESOLUTION = RESOLUTION_X * RESOLUTION_Y;
-const int FRAMERATE = 30;
 
+//------------------------------------------------------------------------------
 // Renders the contents from top left to bottom right
 class Screen
 {
@@ -82,6 +82,7 @@ public:
     }
 };
 
+//------------------------------------------------------------------------------
 // An object that represents a cartesian system for a specified resolution
 class CoordinatePlane
 {
@@ -107,6 +108,7 @@ public:
     }
 };
 
+//------------------------------------------------------------------------------
 // Geometric Objects
 // Point
 class Point
@@ -127,6 +129,8 @@ public:
     }
 };
 
+//--------------------------------------------------------
+// General parent class for all complex geometric shapes
 class geometricObject
 {
 public:
@@ -144,6 +148,7 @@ public:
     }
 };
 
+//--------------------------------------------------------
 // Line object
 class Line : public geometricObject
 {
@@ -172,6 +177,8 @@ public:
     }
 };
 
+//--------------------------------------------------------
+// Circle object
 class Circle : public geometricObject
 {
 public:
@@ -195,23 +202,13 @@ public:
     }
 };
 
+//--------------------------------------------------------
+//(WIP) Bezier Curve
 class Bezier
 {
 };
 
-// class Viewport3D
-// {
-// public:
-//     int width;
-//     int height;
-//     int resolution;
-//     CoordinatePlane xy_plane;
-//     vector<Point*> displayed_points;
-//     Viewport3D(int resolution_x, int resolution_y){
-
-//     }
-// };
-
+//------------------------------------------------------------------------------
 // Handles and generates rendering data for graphics
 class Viewport
 {
