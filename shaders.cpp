@@ -160,9 +160,9 @@ public:
         double x1 = point1->x, y1 = point1->y, x2 = point2->x, y2 = point2->y;
         generateLinePoints(x1, y1, x2, y2);
     }
-    Line(double x1, double y1, double x2, double y2)
+    Line(pair<int, int> p1, pair<int, int> p2)
     {
-        generateLinePoints(x1, y1, x2, y2);
+        generateLinePoints(p1.first, p1.second, p2.first, p2.second);
     }
     void generateLinePoints(double x1, double y1, double x2, double y2)
     {
@@ -186,9 +186,9 @@ public:
     {
         generateLinePoints(centre->x, centre->y, radius);
     }
-    Circle(int centre_x, int centre_y, int radius)
+    Circle(pair<int, int> centre, int radius)
     {
-        generateLinePoints(centre_x, centre_y, radius);
+        generateLinePoints(centre.first, centre.second, radius);
     }
     void generateLinePoints(int centre_x, int centre_y, int radius)
     {
@@ -204,8 +204,42 @@ public:
 
 //--------------------------------------------------------
 //(WIP) Bezier Curve
-class Bezier
+class Bezier : public geometricObject
 {
+public:
+    Bezier(pair<int, int> p1, pair<int, int> p2, pair<int, int> p3)
+    {
+        generateLinePointsQuadratic(p1, p2, p3);
+    }
+    Bezier(pair<int, int> p1, pair<int, int> p2, pair<int, int> p3, pair<int, int> p4)
+    {
+        generateLinePointsCubic(p1, p2, p3, p4);
+    }
+
+    void generateLinePointsQuadratic(pair<int, int> p1, pair<int, int> p2, pair<int, int> p3)
+    {
+        int max_y = max(abs(p2.second - p1.second), abs(p3.second - p1.second));
+        int max_x = max(abs(p2.first - p1.first), abs(p3.first - p1.first));
+        for (double t = 0; t <= 1; t += 1.0 / max(max_x, max_y))
+        {
+            int x = pow((1 - t), 2) * p1.first + 2 * t * (1 - t) * p2.first + pow(t, 2) * p3.first;
+            int y = pow((1 - t), 2) * p1.second + 2 * t * (1 - t) * p2.second + pow(t, 2) * p3.second;
+            Point *point = new Point(x, y);
+            line_points.push_back(point);
+        }
+    }
+    void generateLinePointsCubic(pair<int, int> p1, pair<int, int> p2, pair<int, int> p3, pair<int, int> p4)
+    {
+        int max_y = max(max(abs(p2.second - p1.second), abs(p3.second - p1.second)), abs(p4.second - p1.second));
+        int max_x = max(max(abs(p2.first - p1.first), abs(p3.first - p1.first)), abs(p4.first - p1.first));
+        for (double t = 0; t <= 1; t += 1.0 / max(max_x, max_y))
+        {
+            int x = pow((1 - t), 3) * p1.first + 3 * t * pow((1 - t), 2) * p2.first + 3 * pow(t, 2) * (1 - t) * p3.first + pow(t, 3) * p4.first;
+            int y = pow((1 - t), 3) * p1.second + 3 * t * pow((1 - t), 2) * p2.second + 3 * pow(t, 2) * (1 - t) * p3.second + pow(t, 3) * p4.second;
+            Point *point = new Point(x, y);
+            line_points.push_back(point);
+        }
+    }
 };
 
 //------------------------------------------------------------------------------
@@ -308,11 +342,14 @@ int main()
 {
     Screen screen(RESOLUTION_X, RESOLUTION_Y);
     Viewport viewport(RESOLUTION_X, RESOLUTION_Y);
-    Circle circle(RESOLUTION_X / 2, RESOLUTION_Y / 2, 15);
+    Circle circle({RESOLUTION_X / 2, RESOLUTION_Y / 2}, 15);
     viewport.plotObject(circle.getLinePoints());
 
-    Line line(10, 100, 300, 110);
+    Line line({10, 100}, {300, 110});
     viewport.plotObject(line.getLinePoints());
+
+    Bezier curve({470 / 2, RESOLUTION_Y - 250}, {906 / 2, RESOLUTION_Y - 201}, {367 / 2, RESOLUTION_Y - 86}, {650 / 2, RESOLUTION_Y - 31});
+    viewport.plotObject(curve.getLinePoints());
 
     screen.renderToFile(viewport.getViewportData());
 }
