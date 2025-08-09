@@ -42,14 +42,14 @@ The point has a Translate() method that takes in parameters (int x_distance, int
     screen.renderToFile(viewport.getViewportData());
 ```
 
-## Creating and Plotting Lines
+## Creating Lines
 
-The Line class can be used to create vectors of Points that trace a line between two desired Point Objects. Alternately the Line object can be created without passing Point objects to it and instead the coordinates (int x1, int y1, int x2, int y2).
-Use plotObject() method to plot line by passing the value of Line.getLinePoints() to it.
+The Line class can be used to create vectors of Points that trace a line between two desired Point Objects. Alternately the Line object can be created without passing Point objects to it and instead the coordinate pairs ({int x1, int y1}, {int x2, int y2}).
+Use plotObject() method to plot line by passing the Line object to it.
 
 ```cpp
-    Line line1(2, 2, 10, 10); //Line from (2,2) to (10,10)
-    viewport.plotObject(line1.getLinePoints()); //Plots all points belonging to line onto viewport
+    Line line1({2, 2}, {10, 10}); //Line from (2,2) to (10,10)
+    viewport.plotObject(line1); //Plots all points belonging to line onto viewport
     screen.renderToFile(viewport.getViewportData()); //render
 ```
 
@@ -58,15 +58,24 @@ Use plotObject() method to plot line by passing the value of Line.getLinePoints(
 ## Creating Circles
 
 The Circles class takes in two parameters: center and radius. One option is to pass the center as a Point Object along with an int value of radius.
-Alternately, two int values may be passed as x_center and y_center respectively along with int radius.
+Alternately, a coordinate pair may be passed for x_center and y_center along with int radius.
 
 ```cpp
-    Circle circle(RESOLUTION_X / 2, RESOLUTION_Y / 2, 50); //creates circle at centre of screen with radius=50
-    viewport.plotObject(circle.getLinePoints());  //plot circle points onto viewport
+    Circle circle({RESOLUTION_X / 2, RESOLUTION_Y / 2}, 50); //creates circle at centre of screen with radius=50
+    viewport.plotObject(circle);  //plot circle points onto viewport
     screen.renderToFile(viewport.getViewportData()); // render
 ```
 
 ![circle](https://github.com/Dsboos/Primitive-CAD-Program/blob/main/CirclePlot.png?raw=true)
+
+## Creating Bezier Curves
+
+You can plot two types of Bezier curves: Quadratic and Cubic. The former takes in parameters for three control points whereas the latter takes four. Pass the parameters as pairs of coordinates for your points.
+
+```cpp
+    Bezier quadratic({10,10}, {50, 50}, {100,10}); //Start (10,10), ControlPoint (50,50), End (100,10)
+    Bezier cubic({10,10}, {30, 50}, {60, 0}, {100,10});  //Start (10,10), ControlPoint1 (30,50), ControlPoint2 (60,0), End (100,10)
+```
 
 ## Example Drawing (Face)
 
@@ -77,38 +86,71 @@ RESOLUTION_Y = 280px
     Screen screen(RESOLUTION_X, RESOLUTION_Y);
     Viewport viewport(RESOLUTION_X, RESOLUTION_Y);
 
-    Circle head(RESOLUTION_X / 2, RESOLUTION_Y / 2, 100);
-    viewport.plotObject(head.getLinePoints());
+    Circle head({RESOLUTION_X / 2, RESOLUTION_Y / 2}, 100);
+    viewport.plotObject(head);
 
-    Circle eyeR(RESOLUTION_X / 2 + 20, RESOLUTION_Y / 2 + 20, 20);
-    viewport.plotObject(eyeR.getLinePoints());
-    Circle eyeL(RESOLUTION_X / 2 - 20, RESOLUTION_Y / 2 + 20, 20);
-    viewport.plotObject(eyeL.getLinePoints());
+    Circle eyeR({RESOLUTION_X / 2 + 20, RESOLUTION_Y / 2 + 20}, 20);
+    viewport.plotObject(eyeR);
+    Circle eyeL({RESOLUTION_X / 2 - 20, RESOLUTION_Y / 2 + 20}, 20);
+    viewport.plotObject(eyeL);
 
-    Circle pupilR(RESOLUTION_X / 2 + 10, RESOLUTION_Y / 2 + 20, 10);
-    viewport.plotObject(pupilR.getLinePoints());
-    Circle pupilL(RESOLUTION_X / 2 - 10, RESOLUTION_Y / 2 + 20, 10);
-    viewport.plotObject(pupilL.getLinePoints());
+    Circle pupilR({RESOLUTION_X / 2 + 10, RESOLUTION_Y / 2 + 20}, 10);
+    viewport.plotObject(pupilR);
+    Circle pupilL({RESOLUTION_X / 2 - 10, RESOLUTION_Y / 2 + 20}, 10);
+    viewport.plotObject(pupilL);
 
-    Line mouth(RESOLUTION_X / 2 + 20, RESOLUTION_Y / 2 - 35, RESOLUTION_X / 2 - 20, RESOLUTION_Y / 2 - 45);
-    viewport.plotObject(mouth.getLinePoints());
+    Line mouth({RESOLUTION_X / 2 + 20, RESOLUTION_Y / 2 - 35}, {RESOLUTION_X / 2 - 20, RESOLUTION_Y / 2 - 45});
+    viewport.plotObject(mouth);
 
     screen.renderToFile(viewport.getViewportData());
 ```
 
 ![faceRender](https://github.com/Dsboos/Primitive-CAD-Program/blob/main/FaceRender.png?raw=true)
 
-## Debugging Tools
-
-### 1) (Viewport Method) generateCheckedBG():
-
-generates a checked bg but lags a lot at high resolutions.
-
-### 2) (Viewport Method) clearAllPoints():
-
-clears all points and makes Viewport completely blank again.
-
 ## Latest Updates:
+
+### 09/08/25
+
+1- Completely re-implemented the way Shapes are rendered in viewport. Previously, only the Points of all the Shapes were stored in Viewport memory and rendered accordinly. This prevented any dynamic editting of Shapes that were already plotted as all data about Shape Points was lost. Now, all Shapes are stored in Viewport using a hashmap that maps all the Shapes to their Points. Shapes are now edittable objects and any change in shape line_points vector can be dynamically updated in viewport by calling the **encodePoints()** method.
+
+```cpp
+    Circle circle({20, 20}, 50);
+    viewport.plotObject(circle); //Stores the generated points of the circle in Viewport hashmap
+    viewport.displayed_shapes[&circle] = {}; //Wiping all the points that map to the circle in Viewport Shapes hashmap
+    viewport.encodePoints(); //Updating all the Points in memory to viewport data. Here, this erases the circle.
+```
+
+2- Added translate and scaling methods for all current shape objects (lines, circles and bezier curves). You may now use the **encodePoints()** method to update your changes to the Shape.
+
+```cpp
+    Circle circle({20, 20}, 50);
+    viewport.plotObject(circle); //Stores the generated points of the circle in Viewport hashmap
+    circle.translate({50,50}); //Translate circle by (50, 50)
+    circle.scale(2); //Scale circle by factor of 2
+    viewport.encodePoints(); //Updating all the Points in memory to viewport data. Here, this scales and translates the circle.
+```
+
+### 08/08/25
+
+1- Added Quadratic and Cubic Bezier curves that can be created and initialized using class **Bezier({x1, y1}, {x2, y2}, {x3, y3})** (add {x4, y4} for cubic).
+
+####
+
+2- Changed the parameter types of lines and circles from seperate x, y values for points to coordinate pairs.
+
+```cpp
+    Circle circle1(20, 20, 100); //Before
+    Circle circle1({20, 20}, 100); // After
+```
+
+####
+
+3- Changed the paramter type of the **plotObject()** Viewport method from a **getLinePoints()** function call to pass by refrence. You may now pass the object itself to the method.
+
+```cpp
+    viewport.plotObject(circle.getLinePoints()); //Before
+    viewport.plotObject(circle); //After
+```
 
 ### 06/08/25
 
@@ -151,10 +193,28 @@ Cleaned up the Viewport class by removing deprecated debugging methods. Switched
 
 ## Work in Progress
 
-#### 1) Scale and Rotate functions for Geometric Objects (Lines, Circles, Curves etc.)
+1. Control Interface for drawing using commands.
 
-#### 2) Scale and Rotate functions for entire Viewport
+2. Scale and Rotate functions for entire Viewport
 
-#### 3) Curves (Bezier, Polynomial)
+3. Rectangles and Polygons
 
-#### 4) Rectangles and Polygons
+4. 3D Graphics
+
+## Debugging Tools
+
+### 1) (Viewport Method) generateCheckedBG():
+
+Generates a checked bg but lags a lot at high resolutions.
+
+### 2) (Viewport Method) clearAllPoints():
+
+Clears all points and makes Viewport completely blank again.
+
+### 3) (Viewport Method) clearViewportData():
+
+Clears all the data in the Viewport data array (sets all values to 0).
+
+### 4) (Viewport Method) encodePoints():
+
+Re-encodes all the shapes and points stored in Viewport into the viewport data array
