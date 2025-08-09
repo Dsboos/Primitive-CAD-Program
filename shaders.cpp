@@ -143,17 +143,13 @@ public:
 
 //--------------------------------------------------------
 // General parent class for all complex geometric shapes
-class geometricObject
+class Shape
 {
 public:
+    string ShapeType;
+    virtual ~Shape() = default;
     vector<Point *> line_points;
-    void Translate(int x_value, int y_value)
-    {
-        for (int i = 0; i < line_points.size(); i++)
-        {
-            line_points[i]->Translate(x_value, y_value);
-        }
-    }
+    pair<int, int> origin;
     vector<Point *> *getLinePoints()
     {
         return &line_points;
@@ -162,7 +158,7 @@ public:
 
 //--------------------------------------------------------
 // Line object
-class Line : public geometricObject
+class Line : public Shape
 {
 public:
     pair<double, double> p1, p2;
@@ -174,6 +170,7 @@ public:
     }
     Line(pair<int, int> point1, pair<int, int> point2)
     {
+        ShapeType = "Line";
         p1 = point1;
         p2 = point2;
         generateLinePoints();
@@ -189,6 +186,7 @@ public:
             Point *point = new Point(x, y);
             line_points.push_back(point);
         }
+        origin = {p1.first + (mag / 2) * (p2.first - p1.first) / mag, p1.second + (mag / 2) * (p2.second - p1.second) / mag};
     }
     void scale(pair<double, double> scale, pair<int, int> centre)
     {
@@ -210,7 +208,7 @@ public:
 
 //--------------------------------------------------------
 // Circle object
-class Circle : public geometricObject
+class Circle : public Shape
 {
 public:
     int centre_x, centre_y, radius;
@@ -220,6 +218,7 @@ public:
     }
     Circle(pair<int, int> centre, int rad)
     {
+        ShapeType = "Circle";
         centre_x = centre.first;
         centre_y = centre.second;
         radius = rad;
@@ -235,6 +234,7 @@ public:
             Point *point = new Point(x, y);
             line_points.push_back(point);
         }
+        origin = {centre_x, centre_y};
     }
     void scale(double scale)
     {
@@ -251,26 +251,25 @@ public:
 
 //--------------------------------------------------------
 // Bezier Curve (Quadratic and Cubic)
-class Bezier : public geometricObject
+class Bezier : public Shape
 {
 public:
     pair<int, int> p1, p2, p3, p4;
-    int degree;
     Bezier(pair<int, int> ip1, pair<int, int> ip2, pair<int, int> ip3)
     {
+        ShapeType = "Curve2";
         p1 = ip1;
         p2 = ip2;
         p3 = ip3;
-        degree = 2;
         generateLinePointsQuadratic();
     }
     Bezier(pair<int, int> ip1, pair<int, int> ip2, pair<int, int> ip3, pair<int, int> ip4)
     {
+        ShapeType = "Curve3";
         p1 = ip1;
         p2 = ip2;
         p3 = ip3;
         p4 = ip4;
-        degree = 3;
         generateLinePointsCubic();
     }
 
@@ -286,6 +285,7 @@ public:
             Point *point = new Point(x, y);
             line_points.push_back(point);
         }
+        origin = {pow((0.5), 3) * p1.first + 3 * 0.5 * pow((0.5), 2) * p2.first + 3 * pow(0.5, 2) * (0.5) * p3.first + pow(0.5, 3) * p4.first, pow((0.5), 3) * p1.second + 3 * 0.5 * pow((0.5), 2) * p2.second + 3 * pow(0.5, 2) * (0.5) * p3.second + pow(0.5, 3) * p4.second};
     }
     void generateLinePointsCubic()
     {
@@ -299,6 +299,7 @@ public:
             Point *point = new Point(x, y);
             line_points.push_back(point);
         }
+        origin = {pow((0.5), 3) * p1.first + 3 * 0.5 * pow((0.5), 2) * p2.first + 3 * pow(0.5, 2) * (0.5) * p3.first + pow(0.5, 3) * p4.first, pow((0.5), 3) * p1.second + 3 * 0.5 * pow((0.5), 2) * p2.second + 3 * pow(0.5, 2) * (0.5) * p3.second + pow(0.5, 3) * p4.second};
     }
     void scale(pair<double, double> scale, pair<int, int> centre)
     {
@@ -308,7 +309,7 @@ public:
         p2.second = (p2.second - centre.second) * scale.second + centre.second;
         p3.first = (p3.first - centre.first) * scale.first + centre.first;
         p3.second = (p3.second - centre.second) * scale.second + centre.second;
-        if (degree == 3)
+        if (ShapeType == "Curve3")
         {
             p4.first = (p4.first - centre.first) * scale.first + centre.first;
             p4.second = (p4.second - centre.second) * scale.second + centre.second;
@@ -325,7 +326,7 @@ public:
         p1.second += trans.second;
         p2.second += trans.second;
         p3.second += trans.second;
-        if (degree == 3)
+        if (ShapeType == "Curve3")
         {
             p4.first += trans.first;
             p4.second += trans.second;
@@ -360,8 +361,7 @@ public:
     double *viewport_data;
     CoordinatePlane *viewPlane;
     vector<pair<int, int>> displayed_points;
-    vector<geometricObject *> displayed_shapes;
-    unordered_map<geometricObject *, vector<Point *> *> shape_points;
+    unordered_map<Shape *, vector<Point *> *> displayed_shapes;
     Viewport(int resolution_x, int resolution_y)
     {
         width = resolution_x;
@@ -409,10 +409,9 @@ public:
         encodePoints();
     }
     // Plots any complex object with a line_points vector
-    void plotObject(geometricObject &shape)
+    void plotObject(Shape &shape)
     {
-        displayed_shapes.push_back(&shape);
-        shape_points[&shape] = shape.getLinePoints();
+        displayed_shapes[&shape] = shape.getLinePoints();
         encodePoints();
     }
 
@@ -445,7 +444,7 @@ public:
                 viewport_data[coord_index] = 1;
             }
         }
-        for (auto shape : shape_points)
+        for (auto shape : displayed_shapes)
         {
             vector<Point *> shape_vec = *shape.second;
             for (Point *pt : shape_vec)
@@ -465,22 +464,290 @@ public:
     }
 };
 
+class ControlInterface
+{
+public:
+    Screen *screen;
+    Viewport *viewport;
+    unordered_map<string, Shape *> ShapeStorage;
+    ControlInterface(Screen &i_screen, Viewport &i_viewport, unordered_map<string, Shape *> &storage)
+    {
+        screen = &i_screen;
+        viewport = &i_viewport;
+        ShapeStorage = storage;
+        MainLoop();
+    }
+    void MakeShape(string ShapeType, string Name)
+    {
+        if (ShapeType == "Circle")
+        {
+            int x, y, rad;
+            cout << "Centre_x, Centre_y, Radius: ";
+            cin >> x >> y >> rad;
+            Circle *c = new Circle({x, y}, rad);
+            viewport->plotObject(*c);
+            ShapeStorage[Name] = c;
+        }
+        if (ShapeType == "Line")
+        {
+            int x1, y1, x2, y2;
+            cout << "Start (x, y): ";
+            cin >> x1 >> y1;
+            cout << "End (x, y): ";
+            cin >> x2 >> y2;
+            Line *l = new Line({x1, y1}, {x2, y2});
+            viewport->plotObject(*l);
+            ShapeStorage[Name] = l;
+        }
+        if (ShapeType == "Bezier")
+        {
+            int x1, y1, x2, y2, x3, y3, x4, y4, deg;
+            cout << "Degree: ";
+            cin >> deg;
+            if (deg != 2 && deg != 3)
+                return;
+            if (deg == 2)
+            {
+                cout << "Start (x, y): ";
+                cin >> x1 >> y1;
+                cout << "End (x, y): ";
+                cin >> x3 >> y3;
+                cout << "Control Point (x, y): ";
+                cin >> x2 >> y2;
+            }
+            if (deg == 3)
+            {
+                cout << "Start (x, y): ";
+                cin >> x1 >> y1;
+                cout << "End (x, y): ";
+                cin >> x4 >> y4;
+                cout << "Control Point 1 (x, y): ";
+                cin >> x2 >> y2;
+                cout << "Control Point 2 (x, y): ";
+                cin >> x3 >> y3;
+            }
+            Bezier *b;
+            if (deg == 2)
+                b = new Bezier({x1, y1}, {x2, y2}, {x3, y3});
+            if (deg == 3)
+                b = new Bezier({x1, y1}, {x2, y2}, {x3, y3}, {x4, y4});
+            viewport->plotObject(*b);
+            ShapeStorage[Name] = b;
+        }
+        refreshScreen();
+    }
+    void EditShape(string ShapeType, string Name)
+    {
+        while (true)
+        {
+            string cmd;
+            int ncmd;
+            cout << Name << "> ";
+            cin >> cmd;
+            if (cmd == "0")
+                return;
+            if (cmd == "tx")
+            {
+                while (true)
+                {
+                    cout << Name << " tx> ";
+                    cin >> ncmd;
+                    if (ncmd == 0)
+                        break;
+                    if (ShapeType == "Circle")
+                    {
+                        Circle *c = dynamic_cast<Circle *>(ShapeStorage[Name]);
+                        c->translate({ncmd, 0});
+                    }
+                    if (ShapeType == "Line")
+                    {
+                        Line *l = dynamic_cast<Line *>(ShapeStorage[Name]);
+                        l->translate({ncmd, 0});
+                    }
+                    if (ShapeType == "Bezier")
+                    {
+                        Bezier *b = dynamic_cast<Bezier *>(ShapeStorage[Name]);
+                        b->translate({ncmd, 0});
+                    }
+                    refreshScreen();
+                }
+            }
+            if (cmd == "ty")
+            {
+                while (true)
+                {
+                    cout << Name << " ty> ";
+                    cin >> ncmd;
+                    if (ncmd == 0)
+                        break;
+                    if (ShapeType == "Circle")
+                    {
+                        Circle *c = dynamic_cast<Circle *>(ShapeStorage[Name]);
+                        c->translate({0, ncmd});
+                    }
+                    if (ShapeType == "Line")
+                    {
+                        Line *l = dynamic_cast<Line *>(ShapeStorage[Name]);
+                        l->translate({0, ncmd});
+                    }
+                    if (ShapeType == "Bezier")
+                    {
+                        Bezier *b = dynamic_cast<Bezier *>(ShapeStorage[Name]);
+                        b->translate({0, ncmd});
+                    }
+                    refreshScreen();
+                }
+            }
+            if (cmd == "sx")
+            {
+                while (true)
+                {
+                    cout << Name << " sx> ";
+                    double s;
+                    cin >> s;
+                    if (s == 0)
+                        break;
+                    if (ShapeType == "Circle")
+                    {
+                        Circle *c = dynamic_cast<Circle *>(ShapeStorage[Name]);
+                        c->scale(s);
+                    }
+                    if (ShapeType == "Line")
+                    {
+                        Line *l = dynamic_cast<Line *>(ShapeStorage[Name]);
+                        l->scale({s, 1}, l->origin);
+                    }
+                    if (ShapeType == "Bezier")
+                    {
+                        Bezier *b = dynamic_cast<Bezier *>(ShapeStorage[Name]);
+                        b->scale({s, 1}, b->origin);
+                    }
+                    refreshScreen();
+                }
+            }
+            if (cmd == "sy")
+            {
+                while (true)
+                {
+
+                    cout << Name << " sy> ";
+                    double s;
+                    cin >> s;
+                    if (s == 0)
+                        break;
+                    if (ShapeType == "Circle")
+                    {
+                        Circle *c = dynamic_cast<Circle *>(ShapeStorage[Name]);
+                        c->scale(s);
+                    }
+                    if (ShapeType == "Line")
+                    {
+                        Line *l = dynamic_cast<Line *>(ShapeStorage[Name]);
+                        l->scale({1, s}, l->origin);
+                    }
+                    if (ShapeType == "Bezier")
+                    {
+                        Bezier *b = dynamic_cast<Bezier *>(ShapeStorage[Name]);
+                        b->scale({1, s}, b->origin);
+                    }
+                    refreshScreen();
+                }
+            }
+            if (cmd == "s")
+            {
+                while (true)
+                {
+
+                    cout << Name << " s> ";
+                    double s;
+                    cin >> s;
+                    if (s == 0)
+                        break;
+                    if (ShapeType == "Circle")
+                    {
+                        Circle *c = dynamic_cast<Circle *>(ShapeStorage[Name]);
+                        c->scale(s);
+                    }
+                    if (ShapeType == "Line")
+                    {
+                        Line *l = dynamic_cast<Line *>(ShapeStorage[Name]);
+                        l->scale({s, s}, l->origin);
+                    }
+                    if (ShapeType == "Bezier")
+                    {
+                        Bezier *b = dynamic_cast<Bezier *>(ShapeStorage[Name]);
+                        b->scale({s, s}, b->origin);
+                    }
+                    refreshScreen();
+                }
+            }
+            if (cmd == "d")
+            {
+                viewport->displayed_shapes.erase(ShapeStorage[Name]);
+                delete ShapeStorage[Name];
+                ShapeStorage.erase(Name);
+                refreshScreen();
+                return;
+            }
+        }
+    }
+    void MainLoop()
+    {
+        while (true)
+        {
+            string cmd;
+            string scmd;
+            cout << "PCAD> ";
+            cin >> cmd >> scmd;
+            if (cmd == "0")
+                break;
+            if (cmd == "c")
+            {
+                if (ShapeStorage.count(scmd) && ShapeStorage[scmd]->ShapeType != "Circle")
+                {
+                    cout << "Shape already exists as a " << ShapeStorage[scmd]->ShapeType << "!" << endl;
+                    continue;
+                }
+                if (!ShapeStorage.count(scmd))
+                    MakeShape("Circle", scmd);
+                EditShape("Circle", scmd);
+            }
+            if (cmd == "l")
+            {
+                if (ShapeStorage.count(scmd) && ShapeStorage[scmd]->ShapeType != "Line")
+                {
+                    cout << "Shape already exists as a " << ShapeStorage[scmd]->ShapeType << "!" << endl;
+                    continue;
+                }
+                if (!ShapeStorage.count(scmd))
+                    MakeShape("Line", scmd);
+                EditShape("Line", scmd);
+            }
+            if (cmd == "b")
+            {
+                if (ShapeStorage.count(scmd) && ShapeStorage[scmd]->ShapeType != "Bezier")
+                {
+                    cout << "Shape already exists as a " << ShapeStorage[scmd]->ShapeType << "!" << endl;
+                    continue;
+                }
+                if (!ShapeStorage.count(scmd))
+                    MakeShape("Bezier", scmd);
+                EditShape("Bezier", scmd);
+            }
+            refreshScreen();
+        }
+    }
+    void refreshScreen()
+    {
+        viewport->encodePoints();
+        screen->renderToFile(viewport->getViewportData());
+    }
+};
+
 int main()
 {
     Screen screen(RESOLUTION_X, RESOLUTION_Y);
     Viewport viewport(RESOLUTION_X, RESOLUTION_Y);
-
-    Circle circle({RESOLUTION_X / 2, RESOLUTION_Y / 2}, 50);
-    viewport.plotObject(circle);
-
-    Line line({10, 100}, {300, 110});
-    line.translate({100, 100});
-    viewport.plotObject(line);
-
-    Bezier curve({470 / 2, RESOLUTION_Y - 250}, {906 / 2, RESOLUTION_Y - 201}, {367 / 2, RESOLUTION_Y - 86}, {650 / 2, RESOLUTION_Y - 31});
-    viewport.plotObject(curve);
-    curve.translate({50, 50});
-    viewport.encodePoints();
-
-    screen.renderToFile(viewport.getViewportData());
+    unordered_map<string, Shape *> ShapeStorage;
+    ControlInterface(screen, viewport, ShapeStorage);
 }
