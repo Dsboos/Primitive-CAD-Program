@@ -140,9 +140,7 @@ public:
         y += y_value;
     }
 };
-
-//--------------------------------------------------------
-// General parent class for all complex geometric shapes
+// General parent class for all geometric shapes
 class Shape
 {
 public:
@@ -155,8 +153,6 @@ public:
         return &line_points;
     }
 };
-
-//--------------------------------------------------------
 // Line object
 class Line : public Shape
 {
@@ -205,8 +201,6 @@ public:
         generateLinePoints();
     }
 };
-
-//--------------------------------------------------------
 // Circle object
 class Circle : public Shape
 {
@@ -248,8 +242,6 @@ public:
         generateLinePoints();
     }
 };
-
-//--------------------------------------------------------
 // Bezier Curve (Quadratic and Cubic)
 class Bezier : public Shape
 {
@@ -408,7 +400,7 @@ public:
         plotPoint(point->x, point->y);
         encodePoints();
     }
-    // Plots any complex object with a line_points vector
+    // Plots any shape object with a line_points vector
     void plotObject(Shape &shape)
     {
         displayed_shapes[&shape] = shape.getLinePoints();
@@ -464,6 +456,8 @@ public:
     }
 };
 
+//------------------------------------------------------------------------------
+// Handles the control interface for drawing and manipulating shapes by using console commands
 class ControlInterface
 {
 public:
