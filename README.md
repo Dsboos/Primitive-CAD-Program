@@ -1,11 +1,20 @@
-# Primitive-CAD-program
+# Primitive CAD (PCAD)
 
-A primitive and simple CAD program I created that renders 2D lines and shapes onto the console using nothing but standard libraries.
+A primitive and simple CAD program I created that draws and renders 2D shapes and lines onto the console using nothing but standard libraries.
 
 # How to Use
 
-There are prebuilt classes for all basic geometries you may wish to plot.
-However you need to setup the viewport first with parameters such as the screen resolution.
+There's two ways to using this program.
+
+####
+
+First method is the original way of creating and plotting objects to the Viewport by intializing and calling prebuilt classes in the main function.There are prebuilt classes for all basic geometries you may wish to plot.
+
+####
+
+Second method is with the recently imlpemented Control Interface feature, where Shapes may be created, plotted and manipulated by commands through the terminal.
+
+# [Method 1] Using Object classes:
 
 ## Viewport Initialization
 
@@ -16,7 +25,7 @@ The Screen performs the rendering of this data. The render function renders thre
 
 ```cpp
     Screen screen(RESOLUTION_X, RESOLUTION_Y);
-    Viewport viewport;
+    Viewport viewport(RESOLUTION_X, RESOLUTION_Y);
 ```
 
 ## Plotting Points
@@ -107,7 +116,141 @@ RESOLUTION_Y = 280px
 
 ![faceRender](https://github.com/Dsboos/Primitive-CAD-Program/blob/main/FaceRender.png?raw=true)
 
-## Latest Updates:
+# [Method 2] Using Control Interface class:
+
+## Viewport Initialization
+
+Similar to Method 1, you need to first create a Screen object, initialized with the values for x_resolution and y_resolution of the display size you want. Additionally you also need to create a Viewport.
+
+```cpp
+    Screen screen(RESOLUTION_X, RESOLUTION_Y);
+    Viewport viewport(RESOLUTION_X, RESOLUTION_Y);
+```
+
+## Control Interface Initialization
+
+To use the Interface program in the console, you need to create a Control Interface object and initialize it with the already created Screen and Viewport objects. Additionally, you need to create a hashmap with key type _string_, and value type Shape\*, for storing any Shapes that will be created during your session.
+
+```cpp
+    unordered_map<string, Shape *> ShapeStorage;
+    ControlInterface(screen, viewport, ShapeStorage);
+```
+
+## Creating Shapes
+
+To create a Shape, use the following command format:
+
+####
+
+`shape_type shape_name`
+
+####
+
+Where _shape_type_ can be: c for Circle, l for Line, b for Bezier,
+
+####
+
+and _shape_name_ can be any string corresponding to a unique name for this Shape. For Example:
+
+```
+PCAD> c newcircle
+```
+
+This creates a circle called newcircle. After this command, the interface automatically takes your through the creation wizard for that shape, prompting you to input the relevant parameters necessary for creating the Shape. After the Shape is created, the program automatically enters edit mode for the created Shape.
+
+```
+PCAD> l line            //Command for creating Line
+Start (x, y): 0 0       //Creation Wizard
+End (x, y): 100 100
+line>                   //edit mode for 'line'
+```
+
+## Editing Shapes
+
+To select a already existing Shape for editing, use the same command format as for creation:
+
+####
+
+`shape_type shape_name`
+
+####
+
+Where _shape_type_ is the type of the target Shape: c for Circle, l for Line, b for Bezier,
+
+####
+
+and _shape_name_ is the name of the target Shape.
+
+```
+PCAD> l line        //'line' is already created, so it gets selected
+line>               //edit mode for 'line'
+```
+
+**To exit edit mode, enter 0.**
+
+### 1- Translation
+
+To translate the Shape along x-axis, enter `tx` and enter amount to translate by.
+
+####
+
+To translate the Shape along y-axis, enter `ty` and enter amount to translate by.
+
+####
+
+**The program stays in translation mode until you exit it by entering 0.**
+
+```
+line> tx            //Enter translation_x mode
+line tx> 50         //Translate by 50px right
+line tx> -20        //Translate by 20px left
+line tx> 0          //Exit translation mode
+line> 0             //Exit edit mode
+PCAD>               //Back to main menu
+```
+
+### 2- Scaling
+
+To scale the Shape along x-axis, enter `sx` and enter amount to scale by.
+
+####
+
+To scale the Shape along y-axis, enter `sy` and enter amount to scale by.
+
+####
+
+To scale the Shape uniformly along both axis, enter `s` and enter amount to scale by. This is default scaling method for Circles.
+
+####
+
+**The program stays in scaling mode until you exit it by entering 0.**
+
+```
+line> s            //Enter uniform scaling mode
+line s> 2          //Scale by 2
+line s> 0.5        //Scale by 0.5
+line s> 0          //Exit scaling mode
+line> 0            //Exit edit mode
+PCAD>              //Back to main menu
+```
+
+# Latest Updates:
+
+### 10/08/25
+
+1- Added control interface for drawing and editting shapes using commands.
+
+```
+PCAD> l line
+Start (x, y): 0 0
+End (x, y): 100 100
+```
+
+2- Added origin property to all shapes which is the geometric centre of the Shape represented as a coordinate pair.
+
+3- Removed deprecated vector from viewport class called _displayed_shapes_ and gave that name to Shapes hashmap.
+
+4- Changed name of the parent class _geometricObject_ to _Shape_.
 
 ### 09/08/25
 
@@ -191,7 +334,7 @@ Cleaned up the Viewport class by removing deprecated debugging methods. Switched
     }
 ```
 
-## Work in Progress
+# Work in Progress
 
 1. Control Interface for drawing using commands.
 
@@ -201,7 +344,7 @@ Cleaned up the Viewport class by removing deprecated debugging methods. Switched
 
 4. 3D Graphics
 
-## Debugging Tools
+# Debugging Tools
 
 ### 1) (Viewport Method) generateCheckedBG():
 
