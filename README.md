@@ -117,7 +117,7 @@ RESOLUTION_Y = 280px
 ![faceRender](https://github.com/Dsboos/Primitive-CAD-Program/blob/main/FaceRender.png?raw=true)
 
 # [Method 2] Using Control Interface class:
-
+**IT IS RECOMMENDED TO USE TEXT EDITORS WITH AUTO-REFRESH FEATURES WHEN USING CONTROL INTERFACE FOR A SMOOTHER EXPERIENCE (Notepad++)**
 ## Viewport Initialization
 
 Similar to Method 1, you need to first create a Screen object, initialized with the values for x_resolution and y_resolution of the display size you want. Additionally you also need to create a Viewport.
@@ -233,7 +233,8 @@ line s> 0          //Exit scaling mode
 line> 0            //Exit edit mode
 PCAD>              //Back to main menu
 ```
-
+## Example Drawing with Interface (Another Face)
+![facerender with interface](https://raw.githubusercontent.com/Dsboos/Primitive-CAD-Program/refs/heads/main/FaceRender_Interface.png)
 # Latest Updates:
 
 ### 10/08/25
