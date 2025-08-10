@@ -337,13 +337,11 @@ Cleaned up the Viewport class by removing deprecated debugging methods. Switched
 
 # Work in Progress
 
-1. Control Interface for drawing using commands.
+1. Scale and Rotate functions for entire Viewport
 
-2. Scale and Rotate functions for entire Viewport
+2. Rectangles and Polygons
 
-3. Rectangles and Polygons
-
-4. 3D Graphics
+3. 3D Graphics
 
 # Debugging Tools
 
